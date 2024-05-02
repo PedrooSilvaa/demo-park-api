@@ -16,4 +16,13 @@ public class UsuarioService {
     public Usuario salvar(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
+
+    @Transactional
+    public Usuario buscarPorId(Long id) {
+        //findById por padrão retorna um metodo optional
+        //nesse caso sera usado o orElseThrow() q sera lancado ou o usuario ou uma exceção
+        return usuarioRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Usuario não encontrado")
+        );
+    }
 }
