@@ -1,6 +1,9 @@
 package com.mballem.demoparkapi.service;
 
 import com.mballem.demoparkapi.entity.Usuario;
+import com.mballem.demoparkapi.exception.EntityNotFoundException;
+import com.mballem.demoparkapi.exception.PasswordInvalidException;
+import com.mballem.demoparkapi.exception.UsernameUniqueViolationException;
 import com.mballem.demoparkapi.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +21,12 @@ public class UsuarioService {
 
     @Transactional
     public Usuario salvar(Usuario usuario) {
+        try {
         return usuarioRepository.save(usuario);
+        }catch (org.springframework.dao.DataIntegrityViolationException ex){
+            throw new UsernameUniqueViolationException(String.format("Username {%s} já cadastrado", usuario.getUsername()));
+        }
+
     }
 
     @Transactional(readOnly = true)
@@ -26,18 +34,19 @@ public class UsuarioService {
         //findById por padrão retorna um metodo optional
         //nesse caso sera usado o orElseThrow() q sera lancado ou o usuario ou uma exceção
         return usuarioRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Usuario não encontrado")
+                () -> new EntityNotFoundException(String.format("Usuario id=%s não encontrado", id))
         );
     }
 
     @Transactional
     public Usuario editarSenha(Long id, String senhaAtual, String novaSenha, String confirmaSenha) {
         if (!novaSenha.equals(confirmaSenha)){
-            throw new RuntimeException("Nova senha não confere com confirmação de senha.");
+            throw new PasswordInvalidException("Nova senha não confere com confirmação de senha.");
         }
+
         Usuario user = buscarPorId(id);
         if (!user.getPassword().equals(senhaAtual)){
-            throw new RuntimeException("Sua senha não confere");
+            throw new PasswordInvalidException("Sua senha não confere");
         }
         /*não foi preciso usar um metodo update pois quando buscamos pelo usuario
         * o hibernate só vai finalizar no final da requisicao e resposta
