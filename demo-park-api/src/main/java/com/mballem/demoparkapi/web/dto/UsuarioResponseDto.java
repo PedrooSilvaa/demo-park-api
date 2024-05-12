@@ -1,4 +1,4 @@
-package com.mballem.demoparkapi.web.dto.mapper;
+package com.mballem.demoparkapi.web.dto;
 
 import lombok.*;
 
@@ -12,5 +12,4 @@ public class UsuarioResponseDto {
     private Long id;
     private String username;
     private String role;
-
 }
